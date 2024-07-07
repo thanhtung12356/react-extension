@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin')
 const HtmlPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getHtmlPlugins = (chunks) => {
     return chunks.map(chunk => new HtmlPlugin({
         title: 'React Extension',
@@ -9,11 +10,12 @@ const getHtmlPlugins = (chunks) => {
     }))
 }
 module.exports = {
-    mode: 'development',
-    devtool: 'cheap-module-source-map',
+
     entry: {
         popup: path.resolve('src/popup/popup.tsx'),
-        options: path.resolve('src/options/options.tsx')
+        options: path.resolve('src/options/options.tsx'),
+        background: path.resolve('src/background/background.ts'),
+        contentScript: path.resolve('src/contentScript/contentScript.ts'),
     },
     module: {
         rules: [
@@ -33,6 +35,9 @@ module.exports = {
         ]
     },
     plugins: [
+        new CleanWebpackPlugin({
+            cleanStaleWebpackAssets: false,
+        }),
         new CopyPlugin({
             patterns: [
                 {
