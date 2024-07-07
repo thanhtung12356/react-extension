@@ -1,11 +1,19 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin')
 const HtmlPlugin = require('html-webpack-plugin')
+const getHtmlPlugins = (chunks) => {
+    return chunks.map(chunk => new HtmlPlugin({
+        title: 'React Extension',
+        filename: `${chunk}.html`,
+        chunks: [chunk]
+    }))
+}
 module.exports = {
     mode: 'development',
     devtool: 'cheap-module-source-map',
     entry: {
-        popup: path.resolve('src/popup/popup.tsx')
+        popup: path.resolve('src/popup/popup.tsx'),
+        options: path.resolve('src/options/options.tsx')
     },
     module: {
         rules: [
@@ -13,6 +21,14 @@ module.exports = {
                 use: 'ts-loader',
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
+            },
+            {
+                use: ['style-loader', 'css-loader'],
+                test: /\.css$/i,
+            },
+            {
+                type: 'asset/resource',
+                test: /\.(jpg|jpeg|png|woff|woff2|eot|svg|ttf)$/
             }
         ]
     },
@@ -20,22 +36,27 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: path.resolve('src/manifest.json'),
+                    from: path.resolve('src/static'),
                     to: path.resolve('dist')
                 }
             ]
         }),
-        new HtmlPlugin({
-            title: 'React Extension',
-            filename: 'popup.html',
-            chunks: ['popup']
-        })
+        ...getHtmlPlugins([
+            'popup',
+            'options'
+        ])
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve('dist')
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+        },
     }
 }
+
